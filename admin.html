@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noor Bazaar | Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14162b;--primary:#3a2e8f;--gold:#ffb627;--bg:#f4f2ff;--muted:#62657f;--ok:#1f9d6b;--bad:#d64545;--line:#e6e3f7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+h1,h2,h3,.logo{font-family:'Bricolage Grotesque',system-ui,sans-serif}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--primary);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-weight:700;transition:transform .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(58,46,143,.3)}
+.btn.gold{background:var(--gold);color:var(--ink)}
+.btn.red{background:#fde8e8;color:var(--bad)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+input,textarea,select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--primary);border-color:transparent}
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(120deg,#2a2070,#3a2e8f,#5b3fd0,#2a2070);background-size:300% 300%;animation:flow 12s ease infinite;padding:16px}
+@keyframes flow{50%{background-position:100% 50%}}
+.lbox{background:#fff;padding:36px;border-radius:22px;width:100%;max-width:380px;animation:pop .5s}
+@keyframes pop{from{transform:translateY(24px) scale(.95);opacity:0}}
+.lbox h1{font-size:1.8rem;color:var(--primary);margin-bottom:6px}
+.lbox p{color:var(--muted);margin-bottom:18px}
+.err{color:var(--bad);font-size:.88rem;min-height:20px;margin:8px 0}
+/* layout */
+#app{display:none;min-height:100vh}
+aside{position:fixed;top:0;bottom:0;left:0;width:230px;background:var(--ink);color:#c9cbe0;padding:24px 16px;transition:transform .35s;z-index:20;animation:slide .6s}
+@keyframes slide{from{transform:translateX(-100%)}}
+.logo{color:#fff;font-size:1.4rem;font-weight:800;margin:0 8px 28px}
+aside button.nav{display:block;width:100%;text-align:left;background:none;border:0;color:inherit;padding:12px 14px;border-radius:10px;margin-bottom:6px;transition:background .25s,padding .25s}
+aside button.nav:hover{background:rgba(255,255,255,.08);padding-left:20px}
+aside button.nav.on{background:var(--primary);color:#fff}
+main{margin-left:230px;padding:28px 32px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.top h2{font-size:1.8rem}
+#menu{display:none}
+.view{display:none}.view.on{display:block;animation:fade .45s}
+@keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:26px}
+.stat{background:#fff;border-radius:18px;padding:22px;border-left:5px solid var(--gold);opacity:0;animation:fade .6s forwards;transition:transform .3s}
+.stat:hover{transform:translateY(-5px)}
+.stat span{color:var(--muted);font-size:.9rem}
+.stat b{display:block;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:2rem;color:var(--primary)}
+.panel{background:#fff;border-radius:18px;padding:22px}
+.bar{display:grid;grid-template-columns:130px 1fr 40px;gap:12px;align-items:center;margin:12px 0;font-size:.92rem}
+.track{background:var(--bg);border-radius:99px;height:12px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--primary),#8f7bff);border-radius:99px;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.fill.low{background:linear-gradient(90deg,var(--bad),var(--gold))}
+/* tables */
+.tw{overflow-x:auto;background:#fff;border-radius:18px}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);font-size:.92rem}
+th{background:#faf9ff;color:var(--muted);font-weight:500}
+tbody tr{animation:fade .5s both;transition:background .2s}
+td select{min-width:130px;width:auto;padding-right:28px}
+tbody tr:hover{background:#faf9ff}
+.thumb{width:52px;height:52px;border-radius:10px;object-fit:contain;background:var(--bg);display:grid;place-items:center}
+.pill{padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:700}
+.pill.y{background:#dff5ea;color:var(--ok)}.pill.n{background:#fde8e8;color:var(--bad)}
+.acts{display:flex;gap:6px}
+/* modal + toast */
+.ov{position:fixed;inset:0;background:rgba(20,22,43,.6);display:none;place-items:center;z-index:100;padding:16px}
+.ov.show{display:grid}
+.modal{background:#fff;border-radius:20px;padding:26px;width:100%;max-width:460px;max-height:92vh;overflow:auto;animation:pop .35s}
+.modal h3{margin-bottom:8px}
+.modal label{display:block;font-size:.85rem;font-weight:500;margin:12px 0 4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.prev{width:100%;height:170px;border-radius:14px;background:var(--bg);display:grid;place-items:center;color:var(--muted);overflow:hidden;margin-bottom:8px}
+.prev img{width:100%;height:100%;object-fit:contain}
+.chk{display:flex;gap:8px;align-items:center;margin-top:14px}.chk input{width:auto}
+#toast{position:fixed;right:20px;bottom:20px;background:var(--ink);color:#fff;padding:14px 22px;border-radius:12px;transform:translateY(140%);transition:transform .4s;z-index:200}
+#toast.show{transform:none}#toast.bad{background:var(--bad)}
+@media(max-width:820px){aside{transform:translateX(-100%)}aside.open{transform:none}main{margin-left:0;padding:20px 16px}#menu{display:inline-block}.bar{grid-template-columns:90px 1fr 36px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.stat{opacity:1}}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="lbox">
+    <h1>Noor Bazaar</h1><p>Admin dashboard mein login karein</p>
+    <input id="pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+    <div class="err" id="lerr"></div>
+    <button class="btn" style="width:100%" id="lbtn" onclick="login()">Login</button>
+  </div>
+</div>
+
+<div id="app">
+  <aside id="side">
+    <div class="logo">Noor Bazaar</div>
+    <button class="nav on" data-v="overview">Overview</button>
+    <button class="nav" data-v="products">Products</button>
+    <button class="nav" data-v="orders">Orders</button>
+    <button class="nav" onclick="logout()" style="margin-top:30px">Logout</button>
+  </aside>
+  <main>
+    <div class="top"><div><button class="btn ghost" id="menu" onclick="side.classList.toggle('open')">Menu</button> <h2 id="vt" style="display:inline-block">Overview</h2></div>
+      <div><button class="btn ghost" onclick="refresh()">Refresh</button> <button class="btn gold" id="addb" style="display:none" onclick="editP()">+ Nayi product</button></div></div>
+
+    <div class="view on" id="v-overview">
+      <div class="stats" id="stats"></div>
+      <div class="panel"><h3>Stock ki halat</h3><div id="bars"></div></div>
+    </div>
+    <div class="view" id="v-products"><div class="tw"><table><thead><tr><th>Image</th><th>Naam</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody id="ptb"></tbody></table></div></div>
+    <div class="view" id="v-orders"><div class="tw"><table><thead><tr><th>Order</th><th>Date</th><th>Product</th><th>Qty</th><th>Total</th><th>Customer</th><th>Phone</th><th>Address</th><th>Status</th></tr></thead><tbody id="otb"></tbody></table></div></div>
+  </main>
+</div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)closeM()"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbyxbMGtVnH4FWCiC4lk8HTNHb0nhiE_Uv75SZg1njrINJ-hMBqmBQIcN7DDkr01kYUc/exec';
+const $ = s => document.querySelector(s);
+const side = $('#side');
+const fmt = n => 'Rs. ' + Number(n).toLocaleString('en-PK');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let pw = sessionStorage.getItem('pw') || '', products = [], orders = [], pending = null;
+
+async function call(action, extra = {}) {
+  const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action, password: pw, ...extra }) });
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error || 'Kuch masla aa gaya');
+  return d;
+}
+function toast(t, bad) { const e = $('#toast'); e.textContent = t; e.className = 'show' + (bad ? ' bad' : ''); clearTimeout(e._t); e._t = setTimeout(() => e.className = '', 3000); }
+
+async function login() {
+  pw = $('#pw').value; $('#lerr').textContent = ''; $('#lbtn').disabled = true;
+  try { await call('adminLogin'); sessionStorage.setItem('pw', pw); start(); }
+  catch (e) { $('#lerr').textContent = e.message === 'Wrong password' ? 'Password galat hai.' : 'Connection ka masla: ' + e.message; }
+  $('#lbtn').disabled = false;
+}
+function logout() { sessionStorage.removeItem('pw'); location.reload(); }
+function start() { $('#login').style.display = 'none'; $('#app').style.display = 'block'; refresh(); }
+
+async function refresh() {
+  try {
+    const [p, o] = await Promise.all([call('adminProducts'), call('getOrders')]);
+    products = p.products; orders = o.orders;
+    drawOverview(); drawProducts(); drawOrders();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ---- navigation
+document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+  $('#vt').textContent = b.textContent; $('#addb').style.display = b.dataset.v === 'products' ? '' : 'none';
+  side.classList.remove('open');
+  if (b.dataset.v === 'overview') animateBars();
+});
+
+// ---- overview
+function countUp(el, to, money) {
+  const t0 = performance.now();
+  (function f(t) { const k = Math.min(1, (t - t0) / 1100), v = Math.round(to * (1 - Math.pow(1 - k, 3)));
+    el.textContent = money ? fmt(v) : v; if (k < 1) requestAnimationFrame(f); })(t0);
+}
+function drawOverview() {
+  const ids = new Set(orders.map(o => o.orderId));
+  const revenue = orders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + o.total, 0);
+  const low = products.filter(p => p.quantity <= 5).length;
+  const items = [['Total products', products.length], ['Total orders', ids.size], ['Revenue', revenue, 1], ['Kam stock (5 ya kam)', low]];
+  $('#stats').innerHTML = items.map((x, i) => `<div class="stat" style="animation-delay:${i * 110}ms"><span>${x[0]}</span><b>0</b></div>`).join('');
+  document.querySelectorAll('#stats b').forEach((b, i) => countUp(b, items[i][1], items[i][2]));
+  const max = Math.max(20, ...products.map(p => p.quantity));
+  $('#bars').innerHTML = products.map(p => `<div class="bar"><span>${esc(p.name)}</span><div class="track"><div class="fill ${p.quantity <= 5 ? 'low' : ''}" data-w="${p.quantity / max * 100}"></div></div><b>${p.quantity}</b></div>`).join('') || '<p>Koi product nahi.</p>';
+  animateBars();
+}
+function animateBars() { setTimeout(() => document.querySelectorAll('.fill').forEach(f => f.style.width = f.dataset.w + '%'), 80); }
+
+// ---- products
+function drawProducts() {
+  $('#ptb').innerHTML = products.map((p, i) => `<tr style="animation-delay:${i * 50}ms">
+    <td>${p.image ? `<img class="thumb" src="${esc(p.image)}" alt="">` : '<div class="thumb">🖼️</div>'}</td>
+    <td><b>${esc(p.name)}</b></td><td>${fmt(p.price)}</td><td>${p.quantity}</td>
+    <td><span class="pill ${p.active ? 'y' : 'n'}">${p.active ? 'Dikh rahi hai' : 'Chhupi hui'}</span></td>
+    <td><div class="acts"><button class="btn ghost" onclick="editP('${esc(p.id)}')">Edit</button><button class="btn red" onclick="delP('${esc(p.id)}')">Delete</button></div></td></tr>`).join('')
+    || '<tr><td colspan="6">Abhi koi product nahi. "Nayi product" dabayein.</td></tr>';
+}
+function editP(id) {
+  const p = products.find(x => x.id === id) || { name: '', description: '', price: '', quantity: '', image: '', active: true };
+  pending = { id: p.id, image: p.image, file: null };
+  $('#modal').innerHTML = `<h3>${id ? 'Product edit karein' : 'Nayi product'}</h3>
+    <div class="prev" id="prev">${p.image ? `<img src="${esc(p.image)}" alt="">` : 'Image select karein'}</div>
+    <input type="file" id="file" accept="image/*">
+    <label>Naam</label><input id="pn" value="${esc(p.name)}">
+    <label>Description</label><textarea id="pd" rows="2">${esc(p.description)}</textarea>
+    <div class="two"><div><label>Price (PKR)</label><input id="pp" type="number" min="0" value="${p.price}"></div>
+    <div><label>Stock quantity</label><input id="pq" type="number" min="0" value="${p.quantity}"></div></div>
+    <label class="chk"><input type="checkbox" id="pa" ${p.active ? 'checked' : ''}> Website par dikhayein</label>
+    <div class="err" id="perr"></div>
+    <div class="acts"><button class="btn" id="sv" onclick="saveP()">Save karein</button><button class="btn ghost" onclick="closeM()">Cancel</button></div>`;
+  $('#file').onchange = e => { const f = e.target.files[0]; if (!f) return; pending.file = f; $('#prev').innerHTML = `<img src="${URL.createObjectURL(f)}" alt="">`; };
+  $('#ov').classList.add('show');
+}
+function closeM() { $('#ov').classList.remove('show'); }
+function toB64(file) {
+  return new Promise((res, rej) => { const img = new Image();
+    img.onload = () => { const s = Math.min(1, 900 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = img.width * s; c.height = img.height * s; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL('image/jpeg', .82).split(',')[1]); };
+    img.onerror = () => rej(new Error('Image padhi nahi ja saki')); img.src = URL.createObjectURL(file); });
+}
+async function saveP() {
+  const name = $('#pn').value.trim(), btn = $('#sv');
+  if (!name) { $('#perr').textContent = 'Product ka naam likhein.'; return; }
+  btn.disabled = true; btn.textContent = 'Save ho raha hai...';
+  try {
+    let image = pending.image || '';
+    if (pending.file) {
+      const up = await call('uploadImage', { fileName: name + '.jpg', mimeType: 'image/jpeg', data: await toB64(pending.file) });
+      image = up.url;
+    }
+    await call('saveProduct', { product: { id: pending.id, name, description: $('#pd').value.trim(), price: $('#pp').value, quantity: $('#pq').value, image, active: $('#pa').checked } });
+    closeM(); toast('Product save ho gayi'); refresh();
+  } catch (e) { $('#perr').textContent = e.message; btn.disabled = false; btn.textContent = 'Save karein'; }
+}
+async function delP(id) {
+  if (!confirm('Is product ko hamesha ke liye delete karein?')) return;
+  try { await call('deleteProduct', { id }); toast('Product delete ho gayi'); refresh(); } catch (e) { toast(e.message, true); }
+}
+
+// ---- orders
+function drawOrders() {
+  const st = ['Pending', 'Confirmed', 'Delivered', 'Cancelled'];
+  $('#otb').innerHTML = orders.map((o, i) => { const d = new Date(o.date);
+    return `<tr style="animation-delay:${Math.min(i, 20) * 40}ms"><td><b>${esc(o.orderId)}</b></td><td>${isNaN(d) ? esc(o.date) : d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' })}</td>
+    <td>${esc(o.productName)}</td><td>${o.qty}</td><td>${fmt(o.total)}</td><td>${esc(o.customerName)}</td><td>${esc(o.phone)}</td><td>${esc(o.address)}</td>
+    <td><select onchange="setSt('${esc(o.orderId)}',this.value)">${st.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}</select></td></tr>`; }).join('')
+    || '<tr><td colspan="9">Abhi tak koi order nahi aya.</td></tr>';
+}
+async function setSt(orderId, status) {
+  try { await call('updateOrderStatus', { orderId, status }); toast('Status badal gaya'); refresh(); } catch (e) { toast(e.message, true); }
+}
+
+if (pw) call('adminLogin').then(start).catch(() => sessionStorage.removeItem('pw'));
+</script>
+</body>
+</html>
